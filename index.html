@@ -22,6 +22,7 @@ h1 em{color:var(--accent);font-style:normal}
 .form-row input::placeholder{color:var(--muted)}
 .btn-join{padding:14px 24px;background:var(--accent);color:#030712;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}
 .btn-join:hover{opacity:.88}
+.btn-join:disabled{opacity:.5;cursor:not-allowed}
 .privacy{font-size:12px;color:var(--muted);margin-bottom:2.5rem}
 .features{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:2.5rem}
 .feat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1rem}
@@ -54,11 +55,13 @@ h1 em{color:var(--accent);font-style:normal}
     <div class="counter-badge">🔒 <span id="countNum">1,247</span> people already joined</div>
     <h1>What happens to your<br><em>secrets</em> when you die?</h1>
     <p class="sub">Digital Will sends your final messages, deletes your accounts, and destroys your private files — automatically. Your secrets die with you.</p>
+
     <div class="form-row">
       <input type="email" id="emailInput" placeholder="Enter your email address..." autocomplete="email"/>
-      <button class="btn-join" onclick="joinWaitlist()">Join Waitlist →</button>
+      <button class="btn-join" id="joinBtn" onclick="joinWaitlist()">Join Waitlist →</button>
     </div>
     <div class="privacy">🔒 No spam. Unsubscribe anytime. Free forever plan available.</div>
+
     <div class="features">
       <div class="feat">
         <div class="feat-icon">✉️</div>
@@ -76,6 +79,7 @@ h1 em{color:var(--accent);font-style:normal}
         <div class="feat-sub">Private files destroyed with no trace left behind</div>
       </div>
     </div>
+
     <div class="proof">
       <div class="avatars">
         <div class="av">JK</div><div class="av">SM</div><div class="av">AR</div><div class="av">+</div>
@@ -94,7 +98,7 @@ h1 em{color:var(--accent);font-style:normal}
     <h2 style="font-size:24px;margin-bottom:.5rem">You're on the list! 🎉</h2>
     <p style="color:var(--muted);font-size:14px;line-height:1.7;max-width:340px">We'll email you when Digital Will launches. Share with friends to move up and unlock early access.</p>
     <div class="share-row">
-      <a class="share-btn" href="https://twitter.com/intent/tweet?text=What%20happens%20to%20your%20secrets%20when%20you%20die%3F%20I%20just%20joined%20the%20waitlist%20for%20Digital%20Will%20%F0%9F%94%92&url=https://digitalwill.app" target="_blank">𝕏 Share on X</a>
+      <a class="share-btn" href="https://twitter.com/intent/tweet?text=What%20happens%20to%20your%20secrets%20when%20you%20die%3F%20I%20just%20joined%20the%20waitlist%20for%20Digital%20Will%20%F0%9F%94%92&url=https://digitalwill-two.vercel.app" target="_blank">𝕏 Share on X</a>
       <button class="share-btn" onclick="copyLink()">📋 Copy Link</button>
     </div>
   </div>
@@ -111,27 +115,39 @@ setInterval(() => {
   }
 }, 4000);
 
-function joinWaitlist() {
+async function joinWaitlist() {
   const email = document.getElementById('emailInput').value.trim();
+  const btn = document.getElementById('joinBtn');
+
   if(!email || !email.includes('@')) {
     const input = document.getElementById('emailInput');
     input.style.borderColor = 'rgba(239,68,68,.5)';
     input.placeholder = 'Please enter a valid email';
-    setTimeout(() => { input.style.borderColor = ''; input.placeholder = 'Enter your email address...'; }, 2000);
+    setTimeout(() => { input.style.borderColor=''; input.placeholder='Enter your email address...'; }, 2000);
     return;
   }
+
+  btn.disabled = true;
+  btn.textContent = 'Joining...';
+
+  try {
+    await fetch('https://formspree.io/f/xzdwogkv', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      body: JSON.stringify({email: email})
+    });
+  } catch(e) {}
+
   count++;
   document.getElementById('posNum').textContent = '#' + count.toLocaleString();
   document.getElementById('landing').style.display = 'none';
-  const s = document.getElementById('success');
-  s.style.display = 'flex';
+  document.getElementById('success').style.display = 'flex';
 }
 
 function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = event.target;
-    btn.textContent = '✓ Copied!';
-    setTimeout(() => btn.textContent = '📋 Copy Link', 2000);
+  navigator.clipboard.writeText('https://digitalwill-two.vercel.app').then(() => {
+    event.target.textContent = '✓ Copied!';
+    setTimeout(() => event.target.textContent = '📋 Copy Link', 2000);
   });
 }
 </script>
